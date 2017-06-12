@@ -1,10 +1,10 @@
 import { Reaction } from "/lib/api";
-import { Tags } from "/lib/collections";
 import { FlatButton } from "/imports/plugins/core/ui/client/components";
 import { NotificationContainer } from "/imports/plugins/included/notifications/client/containers";
 import { VerticalDivider } from "/imports/plugins/core/ui/client/components";
 import CartPanel from "../../../../checkout/client/templates/cartPanel/container/cartPanelContainer";
-
+import MainDropdown from "/client/modules/accounts/containers/dropdown/mainDropdownContainer.js";
+import NavBarContainer from "./containers/navbarContainer";
 
 Template.CoreNavigationBar.onCreated(function () {
   this.state = new ReactiveDict();
@@ -37,10 +37,6 @@ Template.CoreNavigationBar.events({
     }, $("html").get(0));
     $("body").css("overflow", "hidden");
     $("#search-input").focus();
-  },
-  "click .notification-icon": function () {
-    $("body").css("overflow", "hidden");
-    $("#notify-dropdown").focus();
   }
 });
 
@@ -58,11 +54,37 @@ Template.CoreNavigationBar.helpers({
     return instance.state.get("searchEnabled");
   },
 
+  dropdown() {
+    return {
+      component: MainDropdown
+    };
+  },
+
+  navbar() {
+    return {
+      component: NavBarContainer
+    };
+  },
+
   searchTemplate() {
     const instance = Template.instance();
     if (instance.state.get("searchEnabled")) {
       return instance.state.get("searchTemplate");
     }
+  },
+
+  onMenuButtonClick() {
+    const instance = Template.instance();
+    return () => {
+      if (instance.toggleMenuCallback) {
+        instance.toggleMenuCallback();
+      }
+    };
+  },
+
+  isSearchEnabled() {
+    const instance = Template.instance();
+    return instance.state.get("searchEnabled");
   },
 
   IconButtonComponent() {
@@ -77,36 +99,7 @@ Template.CoreNavigationBar.helpers({
       component: NotificationContainer
     };
   },
-  onMenuButtonClick() {
-    const instance = Template.instance();
-    return () => {
-      if (instance.toggleMenuCallback) {
-        instance.toggleMenuCallback();
-      }
-    };
-  },
 
-  tagNavProps() {
-    const instance = Template.instance();
-    const tags = Tags.find({
-      isTopLevel: true
-    }, {
-      sort: {
-        position: 1
-      }
-    }).fetch();
-
-    return {
-      name: "coreHeaderNavigation",
-      editable: Reaction.hasAdminAccess(),
-      isEditing: true,
-      tags: tags,
-      onToggleMenu(callback) {
-        // Register the callback
-        instance.toggleMenuCallback = callback;
-      }
-    };
-  },
   cartPanel() {
     return CartPanel;
   }
